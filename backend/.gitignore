@@ -1,0 +1,7 @@
+.env
+__pycache__/
+*.pyc
+temp_audio/
+temp_pdf/
+generated_pdfs/
+audio/

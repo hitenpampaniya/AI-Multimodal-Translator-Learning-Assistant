@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Verba — Complete AI Translator & Language Assistant</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+
+<body>
+
+  <!-- Anti-flash script to apply saved theme immediately on load -->
+  <script>
+    (function() {
+      const saved = localStorage.getItem('theme');
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      if (saved === 'dark' || (!saved && prefersDark)) {
+        document.body.classList.add('dark-mode');
+      }
+    })();
+  </script>
+
+  <!-- =========================================================
+       TOP NAVIGATION (Clean & Uncrowded)
+  ========================================================== -->
+
+  <header class="topnav">
+    <div class="topnav__brand">
+      <svg viewBox="0 0 28 28" fill="none" class="brand-mark">
+        <path d="M14 2C14 2 6 8 6 15C6 20 9.5 24 14 26C18.5 24 22 20 22 15C22 8 14 2 14 2Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+        <path d="M6 15h16M14 2v24" stroke="currentColor" stroke-width="1.1" opacity="0.5"/>
+      </svg>
+      <span>Text Translator</span>
+    </div>
+
+    <nav class="topnav__tabs">
+      <button class="tab tab--active" id="translationTab" type="button">Translation</button>
+      <button class="tab" id="ttsTab" type="button">Text to Speech</button>
+      <button class="tab" id="voiceTranslateTab" type="button">Voice Translator</button>
+      <button class="tab" id="sttTab" type="button">Speech to Text</button>
+      <button class="tab" id="imageTtsTab" type="button">Image to Voice</button>
+      <button class="tab" id="pdfTranslateTab" type="button">PDF Translator</button>
+      <button class="tab" id="chatTab" type="button">AI Tutor 🤖</button>
+    </nav>
+    <div class="topnav__spacer"></div>
+
+    <!-- THEME TOGGLE BUTTON -->
+    <button
+      id="themeToggle"
+      type="button"
+      aria-label="Toggle dark mode"
+      title="Switch to dark mode"
+      style="
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        border: 1px solid var(--ink-150);
+        background: var(--surface);
+        color: var(--ink-900);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 16px;
+        flex-shrink: 0;
+      "
+    >
+      🌙
+    </button>
+  </header>
+
+  <!-- =========================================================
+       MAIN WORKSPACE
+  ========================================================== -->
+
+  <main class="workspace">
+
+    <!-- =======================================================
+         1. TRANSLATION SECTION (Includes Camera Translate below)
+    ======================================================== -->
+    <div id="translationSection" class="app-section">
+      <div class="lang-toolbar">
+        <div class="lang-pill-group">
+          <button class="lang-pill" id="sourceLangBtn" type="button" aria-haspopup="listbox">
+            <span id="sourceLangLabel">Detect language</span>
+            <svg viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <select id="sourceLang" class="lang-native-select" aria-label="Source language">
+            <option value="auto">Detect language</option>
+          </select>
+        </div>
+
+        <button id="swapBtn" class="dial" type="button" aria-label="Swap languages" title="Swap languages">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M4 8h15l-4-4M20 16H5l4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+
+        <div class="lang-pill-group">
+          <button class="lang-pill" id="targetLangBtn" type="button" aria-haspopup="listbox">
+            <span id="targetLangLabel">Hindi</span>
+            <svg viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <select id="targetLang" class="lang-native-select" aria-label="Target language"></select>
+        </div>
+
+        <div class="toolbar-spacer"></div>
+        <span class="live-indicator" id="liveIndicator"><span class="live-dot"></span>Live translation</span>
+      </div>
+
+      <section class="editor" aria-label="Translator">
+        <div class="pane">
+          <div class="pane__scroll">
+            <textarea id="sourceText" class="pane__text" placeholder="Type to translate…" maxlength="5000" aria-label="Text to translate" autofocus></textarea>
+          </div>
+          <div class="pane__toolbar">
+            <div class="tool-group">
+              <button class="icon-btn" id="listenSourceBtn" type="button" title="Listen" aria-label="Listen to source text"><svg viewBox="0 0 24 24" fill="none"><path d="M4 9v6h4l5 4V5L8 9H4Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M16 8.5a5 5 0 0 1 0 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+              <button class="icon-btn" id="clearBtn" type="button" title="Clear" aria-label="Clear text"><svg viewBox="0 0 24 24" fill="none"><path d="M5 6h14M9 6V4h6v2M7 6l1 14h8l1-14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+              <label for="imageInput" class="icon-btn" title="Translate Image" style="display: inline-flex; align-items: center; gap: 6px; width: auto; padding: 0 12px; cursor: pointer;">
+                <svg viewBox="0 0 24 24" fill="none" style="width: 17px; height: 17px; flex-shrink: 0;"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 8h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><rect x="4" y="4" width="16" height="16" rx="2" stroke="currentColor" stroke-width="1.5"/></svg>
+                <span style="font-size: 12px; font-weight: 600; color: var(--ink-700);">Translate Image</span>
+              </label>
+              <input type="file" id="imageInput" accept="image/*" hidden />
+            </div>
+            <span id="charCount" class="mono muted">0 / 5000</span>
+          </div>
+        </div>
+
+        <div class="seam" aria-hidden="true"></div>
+
+        <div class="pane pane--output">
+          <div class="shimmer-bar" id="shimmerBar" aria-hidden="true"></div>
+          <div class="pane__scroll">
+            <div id="targetText" class="pane__text pane__text--output" aria-live="polite" data-placeholder="Translation will appear here"></div>
+          </div>
+          <div class="pane__toolbar">
+            <div class="tool-group">
+              <button class="icon-btn" id="listenTargetBtn" type="button" title="Listen" aria-label="Listen to translation"><svg viewBox="0 0 24 24" fill="none"><path d="M4 9v6h4l5 4V5L8 9H4Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M16 8.5a5 5 0 0 1 0 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+              <button class="icon-btn" id="copyBtn" type="button" title="Copy" aria-label="Copy translation"><svg viewBox="0 0 24 24" fill="none"><rect x="9" y="9" width="11" height="11" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M5 15V6a1.5 1.5 0 0 1 1.5-1.5H15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+              <button class="icon-btn" id="starBtn" type="button" title="Save to favorites" aria-label="Save to favorites" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.2 1 5.9-5.2-2.8-5.2 2.8 1-5.9-4.3-4.2 5.9-.8L12 3.5Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg></button>
+            </div>
+            <span id="detectedTag" class="mono muted tag" hidden></span>
+          </div>
+        </div>
+      </section>
+      <p class="hint">Type to translate automatically · <kbd>Ctrl</kbd> + <kbd>Enter</kbd> to translate instantly</p>
+
+      <!-- =======================================================
+           CAMERA TRANSLATE EMBEDDED SECTION (Directly below text translation)
+      ======================================================== -->
+      <div style="margin-top: 40px; padding: 24px; background: var(--surface); border: 1px solid var(--ink-150); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm);">
+        <h3 style="margin: 0 0 4px 0; font-size: 18px; color: var(--blue-700);">📷 Live Camera Translator</h3>
+        <p class="muted" style="margin-bottom: 16px; font-size: 13.5px;">Point your camera at text to extract and translate it instantly.</p>
+
+        <div class="camera-container-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+          <!-- Left: Camera Preview & Controls -->
+          <div class="camera-pane" style="display: flex; flex-direction: column; gap: 12px;">
+            <div class="camera-viewport" style="position: relative; width: 100%; height: 300px; background: #000; border-radius: 12px; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+              <video id="cameraVideo" autoplay playsinline muted style="width: 100%; height: 100%; object-fit: cover;"></video>
+              <canvas id="cameraCanvas" style="display: none;"></canvas>
+              <div id="liveOverlay" class="live-overlay" style="display: none; position: absolute; bottom: 12px; left: 12px; right: 12px; background: rgba(15, 27, 45, 0.85); color: #fff; padding: 10px; border-radius: 8px; font-size: 14px; text-align: center; z-index: 10;"></div>
+            </div>
+            
+            <div class="camera-controls" style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+              <button id="startCamBtn" class="btn-secondary" style="padding: 8px 14px; cursor: pointer; border-radius: 6px; font-weight: 600;">Start Camera</button>
+              <button id="stopCamBtn" class="btn-secondary" style="padding: 8px 14px; cursor: pointer; border-radius: 6px; font-weight: 600;" disabled>Stop Camera</button>
+              <button id="captureBtn" class="btn-primary" style="padding: 8px 14px; cursor: pointer; border-radius: 6px; background: var(--blue-600); color: white; border: none; font-weight: 600;" disabled>📷 Capture</button>
+              <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; cursor: pointer; margin-left: auto;">
+                <input type="checkbox" id="liveToggle" disabled /> Live Translate
+              </label>
+            </div>
+            <div id="camError" class="error-message" style="display: none; color: var(--error);"></div>
+          </div>
+
+          <!-- Right: Language Dropdowns & Results -->
+          <div class="results-pane" style="display: flex; flex-direction: column; gap: 14px;">
+            <div class="form-row" style="display: flex; gap: 10px;">
+              <div class="form-group" style="flex: 1;">
+                <label for="camSourceLang" style="display: block; margin-bottom: 4px; font-weight: 600; font-size: 12px; color: var(--ink-500);">From:</label>
+                <select id="camSourceLang" style="width: 100%; padding: 8px; border-radius: 6px; background: var(--surface); color: var(--ink-900); border: 1px solid var(--ink-150); font-size: 13px;">
+                  <option value="auto">Auto Detect</option>
+                </select>
+              </div>
+              <div class="form-group" style="flex: 1;">
+                <label for="camTargetLang" style="display: block; margin-bottom: 4px; font-weight: 600; font-size: 12px; color: var(--ink-500);">To:</label>
+                <select id="camTargetLang" style="width: 100%; padding: 8px; border-radius: 6px; background: var(--surface); color: var(--ink-900); border: 1px solid var(--ink-150); font-size: 13px;">
+                  <option value="en">English</option>
+                </select>
+              </div>
+            </div>
+
+            <button id="camTranslateBtn" class="btn-primary" style="padding: 10px 14px; cursor: pointer; border-radius: 6px; background: var(--blue-600); color: white; border: none; font-weight: 600; width: 100%;">🔄 Translate Frame</button>
+
+            <div class="form-group">
+              <label style="display: block; margin-bottom: 4px; font-weight: 600; font-size: 12px; color: var(--ink-500);">Detected Text:</label>
+              <div id="camDetectedText" style="padding: 10px; background: var(--page-bg); border-radius: 6px; border: 1px solid var(--ink-150); min-height: 50px; font-family: 'Source Serif 4', serif; font-size: 14px; word-break: break-word;"></div>
+            </div>
+
+            <div class="form-group">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <label style="font-weight: 600; font-size: 12px; color: var(--blue-700);">Translation:</label>
+                <button id="camTtsBtn" class="icon-btn" title="Listen to Translation" disabled style="width: 28px; height: 28px; border-radius: 4px; border: 1px solid var(--ink-150); background: var(--surface); cursor: pointer; display: flex; align-items: center; justify-content: center;">🔊</button>
+              </div>
+              <div id="camTranslatedText" style="padding: 10px; background: var(--blue-50); border-radius: 6px; border: 1px solid var(--ink-150); min-height: 50px; font-family: 'Source Serif 4', serif; font-size: 14px; word-break: break-word;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- =======================================================
+         2. TEXT TO SPEECH SECTION
+    ======================================================== -->
+    <div id="ttsSection" class="app-section" style="display: none; padding: 24px; max-width: 800px; margin: 0 auto;">
+      <h2>Text to Speech</h2>
+      <div class="form-group" style="margin-bottom: 20px;">
+        <label for="tts-text" style="display: block; margin-bottom: 8px; font-weight: 600;">Enter your text:</label>
+        <textarea id="tts-text" rows="5" placeholder="Enter text here..." style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--ink-150); background: var(--surface); color: var(--ink-900);"></textarea>
+      </div>
+      <div class="form-row" style="display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap;">
+        <div class="form-group" style="flex: 1; min-width: 200px;">
+          <label for="tts-language" style="display: block; margin-bottom: 8px; font-weight: 600;">Language:</label>
+          <select id="tts-language" style="width: 100%; padding: 10px; border-radius: 6px; background: var(--surface); color: var(--ink-900); border: 1px solid var(--ink-150);"></select>
+        </div>
+        <div class="form-group" style="flex: 1; min-width: 200px;">
+          <label for="tts-voice" style="display: block; margin-bottom: 8px; font-weight: 600;">Voice:</label>
+          <select id="tts-voice" style="width: 100%; padding: 10px; border-radius: 6px; background: var(--surface); color: var(--ink-900); border: 1px solid var(--ink-150);"></select>
+        </div>
+        <div class="form-group" style="flex: 1; min-width: 150px;">
+          <label for="tts-speed" style="display: block; margin-bottom: 8px; font-weight: 600;">Speed:</label>
+          <select id="tts-speed" style="width: 100%; padding: 10px; border-radius: 6px; background: var(--surface); color: var(--ink-900); border: 1px solid var(--ink-150);">
+            <option value="0.5x">0.5x</option>
+            <option value="0.75x">0.75x</option>
+            <option value="1.0x" selected>1.0x</option>
+            <option value="1.25x">1.25x</option>
+            <option value="1.5x">1.5x</option>
+            <option value="2.0x">2.0x</option>
+          </select>
+        </div>
+      </div>
+      <button id="tts-generate-btn" class="btn-primary" style="padding: 12px 24px; cursor: pointer; font-weight: 600; border-radius: 6px; background: var(--blue-600); color: white; border: none;">🔊 Generate Speech</button>
+      <div id="tts-loading" style="display: none; margin-top: 10px; font-style: italic;">Generating speech, please wait...</div>
+      <div id="tts-error" class="error-message" style="display: none; color: var(--error); margin-top: 10px;"></div>
+      <div class="audio-output-container" style="margin-top: 30px;">
+        <label style="display: block; margin-bottom: 8px; font-weight: 600;">Audio:</label>
+        <audio id="tts-audio-player" controls style="display: none; width: 100%; margin-bottom: 15px;"></audio><br>
+        <a id="tts-download-link" style="display: none;" class="btn-secondary">Download Audio</a>
+      </div>
+    </div>
+
+    <!-- =======================================================
+         3. VOICE TRANSLATOR SECTION
+    ======================================================== -->
+    <div id="voiceTranslateSection" class="app-section" style="display: none; padding: 24px; max-width: 800px; margin: 0 auto;">
+      <h2>Voice Translator</h2>
+      <div class="form-row" style="display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap;">
+        <div class="form-group" style="flex: 1; min-width: 200px;">
+          <label for="vtSourceLang" style="display: block; margin-bottom: 8px; font-weight: 600;">From:</label>
+          <select id="vtSourceLang" style="width: 100%; padding: 10px; border-radius: 6px; background: var(--surface); color: var(--ink-900); border: 1px solid var(--ink-150);"></select>
+        </div>
+        <div class="form-group" style="flex: 1; min-width: 200px;">
+          <label for="vtTargetLang" style="display: block; margin-bottom: 8px; font-weight: 600;">To:</label>
+          <select id="vtTargetLang" style="width: 100%; padding: 10px; border-radius: 6px; background: var(--surface); color: var(--ink-900); border: 1px solid var(--ink-150);"></select>
+        </div>
+      </div>
+
+      <div style="text-align: center; margin: 30px 0;">
+        <button id="vtRecordBtn" class="btn-primary" style="padding: 14px 28px; font-size: 16px; cursor: pointer; font-weight: 600; border-radius: 30px; background: var(--blue-600); color: white; border: none;">🎤 Start Recording</button>
+      </div>
+
+      <div style="margin-bottom: 15px; font-weight: 600;">
+        Status: <span id="vtStatus" style="font-weight: normal; color: var(--ink-500);">Ready</span>
+      </div>
+
+      <div id="vtError" class="error-message" style="display: none; color: var(--error); margin-bottom: 15px;"></div>
+
+      <div id="vtResultContainer" style="display: none; background: var(--surface); padding: 20px; border-radius: 8px; border: 1px solid var(--ink-150);">
+        <div style="margin-bottom: 15px;">
+          <strong>Original Speech:</strong>
+          <p id="vtOriginalText" style="margin-top: 5px; padding: 10px; background: var(--page-bg); border-radius: 4px; border: 1px solid var(--ink-150);"></p>
+        </div>
+        <div style="margin-bottom: 15px;">
+          <strong>Translated Text:</strong>
+          <p id="vtTranslatedText" style="margin-top: 5px; padding: 10px; background: var(--page-bg); border-radius: 4px; border: 1px solid var(--ink-150);"></p>
+        </div>
+        <div>
+          <strong>🔊 Translated Voice:</strong><br>
+          <audio id="vtAudioPlayer" controls style="display: none; width: 100%; margin: 10px 0;"></audio><br>
+          <a id="vtDownloadLink" style="display: none;" class="btn-secondary">Download Audio</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- =======================================================
+         4. SPEECH TO TEXT SECTION
+    ======================================================== -->
+    <div id="sttSection" class="app-section" style="display: none; padding: 24px; max-width: 800px; margin: 0 auto;">
+      <h2>Speech to Text</h2>
+      
+      <div class="form-group" style="margin-bottom: 20px;">
+        <label for="sttSourceLang" style="display: block; margin-bottom: 8px; font-weight: 600;">Source Language:</label>
+        <select id="sttSourceLang" style="width: 100%; padding: 10px; border-radius: 6px; background: var(--surface); color: var(--ink-900); border: 1px solid var(--ink-150);"></select>
+      </div>
+
+      <div style="text-align: center; margin: 30px 0;">
+        <button id="sttRecordBtn" class="btn-primary" style="padding: 14px 28px; font-size: 16px; cursor: pointer; font-weight: 600; border-radius: 30px; background: var(--blue-600); color: white; border: none;">🎤 Start Recording</button>
+      </div>
+
+      <div style="margin-bottom: 15px; font-weight: 600;">
+        Status: <span id="sttStatus" style="font-weight: normal; color: var(--ink-500);">Ready</span>
+      </div>
+
+      <div id="sttError" class="error-message" style="display: none; color: var(--error); margin-bottom: 15px;"></div>
+
+      <div id="sttResultContainer" style="display: none; background: var(--surface); padding: 20px; border-radius: 8px; border: 1px solid var(--ink-150);">
+        <label style="display: block; margin-bottom: 8px; font-weight: 600;">Transcribed Text:</label>
+        <div id="sttTextOutput" style="min-height: 80px; padding: 12px; background: var(--page-bg); border-radius: 6px; border: 1px solid var(--ink-150); margin-bottom: 15px; word-break: break-word;"></div>
+        
+        <div style="display: flex; gap: 10px;">
+          <button id="sttCopyBtn" class="btn-secondary" style="padding: 8px 16px; cursor: pointer; border-radius: 4px;">Copy Text</button>
+          <button id="sttClearBtn" class="btn-secondary" style="padding: 8px 16px; cursor: pointer; border-radius: 4px; background: var(--ink-100); color: var(--ink-900);">Clear</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- =======================================================
+         5. IMAGE TEXT TO VOICE SECTION
+    ======================================================== -->
+    <div id="imageTtsSection" class="app-section" style="display: none; padding: 24px; max-width: 800px; margin: 0 auto;">
+      <h2>Image Text to Voice</h2>
+      
+      <div class="form-group" style="margin-bottom: 20px;">
+        <label for="imageTtsInput" class="btn-secondary" id="imageTtsUploadLabel" style="display: inline-block; padding: 10px 20px; cursor: pointer; border-radius: 6px; border: 1px solid var(--ink-150); background: var(--surface); color: var(--ink-900); text-align: center;">Upload Image</label>
+        <input type="file" id="imageTtsInput" accept="image/jpeg, image/png, image/webp, image/jpg" hidden />
+      </div>
+
+      <div style="margin-bottom: 20px; text-align: center;">
+        <img id="imageTtsPreview" src="" alt="Image Preview" style="display: none; max-width: 100%; max-height: 250px; border-radius: 8px; border: 1px solid var(--ink-150); margin: 0 auto;" />
+      </div>
+
+      <div style="margin-bottom: 20px;">
+        <button id="imageTtsExtractBtn" class="btn-secondary" style="padding: 10px 20px; cursor: pointer; border-radius: 6px; font-weight: 600;">Extract Text</button>
+      </div>
+
+      <div class="form-group" style="margin-bottom: 20px;">
+        <label for="imageTtsText" style="display: block; margin-bottom: 8px; font-weight: 600;">Extracted Text:</label>
+        <textarea id="imageTtsText" rows="5" placeholder="Extracted text will appear here. You can edit it..." style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--ink-150); background: var(--surface); color: var(--ink-900);"></textarea>
+      </div>
+
+      <div class="form-row" style="display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap;">
+        <div class="form-group" style="flex: 1; min-width: 200px;">
+          <label for="imageTtsLanguage" style="display: block; margin-bottom: 8px; font-weight: 600;">Language:</label>
+          <select id="imageTtsLanguage" style="width: 100%; padding: 10px; border-radius: 6px; background: var(--surface); color: var(--ink-900); border: 1px solid var(--ink-150);"></select>
+        </div>
+        <div class="form-group" style="flex: 1; min-width: 200px;">
+          <label for="imageTtsVoice" style="display: block; margin-bottom: 8px; font-weight: 600;">Voice:</label>
+          <select id="imageTtsVoice" style="width: 100%; padding: 10px; border-radius: 6px; background: var(--surface); color: var(--ink-900); border: 1px solid var(--ink-150);"></select>
+        </div>
+        <div class="form-group" style="flex: 1; min-width: 150px;">
+          <label for="imageTtsSpeed" style="display: block; margin-bottom: 8px; font-weight: 600;">Speed:</label>
+          <select id="imageTtsSpeed" style="width: 100%; padding: 10px; border-radius: 6px; background: var(--surface); color: var(--ink-900); border: 1px solid var(--ink-150);">
+            <option value="0.5x">0.5x</option>
+            <option value="0.75x">0.75x</option>
+            <option value="1.0x" selected>1.0x</option>
+            <option value="1.25x">1.25x</option>
+            <option value="1.5x">1.5x</option>
+            <option value="2.0x">2.0x</option>
+          </select>
+        </div>
+      </div>
+
+      <button id="imageTtsGenerateBtn" class="btn-primary" style="padding: 12px 24px; cursor: pointer; font-weight: 600; border-radius: 6px; background: var(--blue-600); color: white; border: none;">🔊 Generate Speech</button>
+      
+      <div style="margin-top: 15px; font-weight: 600;">
+        Status: <span id="imageTtsStatus" style="font-weight: normal; color: var(--ink-500);">Ready</span>
+      </div>
+      
+      <div id="imageTtsError" class="error-message" style="display: none; color: var(--error); margin-top: 10px;"></div>
+
+      <div class="audio-output-container" style="margin-top: 30px;">
+        <label style="display: block; margin-bottom: 8px; font-weight: 600;">Audio:</label>
+        <audio id="imageTtsAudioPlayer" controls style="display: none; width: 100%; margin-bottom: 15px;"></audio><br>
+        <a id="imageTtsDownloadLink" style="display: none;" class="btn-secondary">Download Audio</a>
+      </div>
+    </div>
+
+    <!-- =======================================================
+         6. PDF TRANSLATOR SECTION
+    ======================================================== -->
+    <div id="pdfTranslateSection" class="app-section" style="display: none; padding: 24px; max-width: 800px; margin: 0 auto;">
+      <h2>PDF Translator</h2>
+
+      <div id="pdfDropZone" style="border: 2px dashed var(--ink-150); border-radius: 12px; padding: 30px; text-align: center; background: var(--surface); margin-bottom: 20px;">
+        <div style="font-size: 36px; margin-bottom: 10px;">📄</div>
+        <p style="margin-bottom: 10px; font-weight: 600;">Drag & Drop PDF Here</p>
+        <p style="margin-bottom: 15px; color: var(--ink-500); font-size: 14px;">or</p>
+        <button id="pdfChooseBtn" class="btn-secondary" style="padding: 10px 20px; cursor: pointer; border-radius: 6px; font-weight: 600;">Choose PDF</button>
+        <input type="file" id="pdfFileInput" accept="application/pdf" hidden />
+      </div>
+
+      <div id="pdfFileInfo" style="display: none; margin-bottom: 20px; padding: 12px; background: var(--surface); border-radius: 8px; border: 1px solid var(--ink-150);">
+        <strong>Selected File:</strong> <span id="pdfFileName"></span> (<span id="pdfFileSize"></span>)
+      </div>
+
+      <div class="form-row" style="display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap;">
+        <div class="form-group" style="flex: 1; min-width: 200px;">
+          <label for="pdfSourceLang" style="display: block; margin-bottom: 8px; font-weight: 600;">Source Language:</label>
+          <select id="pdfSourceLang" style="width: 100%; padding: 10px; border-radius: 6px; background: var(--surface); color: var(--ink-900); border: 1px solid var(--ink-150);"></select>
+        </div>
+        <div class="form-group" style="flex: 1; min-width: 200px;">
+          <label for="pdfTargetLang" style="display: block; margin-bottom: 8px; font-weight: 600;">Target Language:</label>
+          <select id="pdfTargetLang" style="width: 100%; padding: 10px; border-radius: 6px; background: var(--surface); color: var(--ink-900); border: 1px solid var(--ink-150);"></select>
+        </div>
+      </div>
+
+      <button id="pdfTranslateBtn" class="btn-primary" style="padding: 12px 24px; cursor: pointer; font-weight: 600; border-radius: 6px; background: var(--blue-600); color: white; border: none;">Translate PDF</button>
+
+      <div style="margin-top: 15px; font-weight: 600;">
+        Status: <span id="pdfStatus" style="font-weight: normal; color: var(--ink-500);">Ready</span>
+      </div>
+
+      <div id="pdfError" class="error-message" style="display: none; color: var(--error); margin-top: 10px;"></div>
+
+      <div id="pdfResultContainer" style="display: none; margin-top: 30px; background: var(--surface); padding: 20px; border-radius: 8px; border: 1px solid var(--ink-150); text-align: center;">
+        <p style="margin-bottom: 15px; font-weight: 600; color: var(--green);">✅ PDF translated successfully!</p>
+        <a id="pdfDownloadLink" class="btn-secondary" style="display: inline-block; padding: 10px 20px; background: var(--blue-600); color: white; border-radius: 6px; text-decoration: none; font-weight: 600;">Download Translated PDF</a>
+      </div>
+    </div>
+
+    <!-- =======================================================
+         7. AI LANGUAGE LEARNING CHATBOT SECTION
+    ======================================================== -->
+    <div id="chatSection" class="app-section" style="display: none; padding: 24px; max-width: 900px; margin: 0 auto;">
+      <h2>AI Language Tutor</h2>
+
+      <div class="form-row" style="display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap;">
+        <div class="form-group" style="flex: 1; min-width: 180px;">
+          <label for="chatNativeLang" style="display: block; margin-bottom: 8px; font-weight: 600;">My Language:</label>
+          <select id="chatNativeLang" style="width: 100%; padding: 10px; border-radius: 6px; background: var(--surface); color: var(--ink-900); border: 1px solid var(--ink-150);">
+            <option value="English" selected>English</option>
+            <option value="Spanish">Spanish</option>
+            <option value="French">French</option>
+          </select>
+        </div>
+        <div class="form-group" style="flex: 1; min-width: 180px;">
+          <label for="chatLearningLang" style="display: block; margin-bottom: 8px; font-weight: 600;">Learning Language:</label>
+          <select id="chatLearningLang" style="width: 100%; padding: 10px; border-radius: 6px; background: var(--surface); color: var(--ink-900); border: 1px solid var(--ink-150);">
+            <option value="Hindi" selected>Hindi</option>
+            <option value="Spanish">Spanish</option>
+            <option value="French">French</option>
+            <option value="German">German</option>
+            <option value="Japanese">Japanese</option>
+            <option value="Chinese">Chinese</option>
+            <option value="Arabic">Arabic</option>
+          </select>
+        </div>
+        <div class="form-group" style="flex: 1; min-width: 180px;">
+          <label for="chatLevel" style="display: block; margin-bottom: 8px; font-weight: 600;">Level:</label>
+          <select id="chatLevel" style="width: 100%; padding: 10px; border-radius: 6px; background: var(--surface); color: var(--ink-900); border: 1px solid var(--ink-150);">
+            <option value="Beginner" selected>Beginner</option>
+            <option value="Intermediate">Intermediate</option>
+            <option value="Advanced">Advanced</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="chatError" class="error-message" style="display: none; color: var(--error); margin-bottom: 15px;"></div>
+
+      <div class="chat-container">
+        <div class="chat-messages" id="chatMessages">
+          <div class="chat-message ai-msg">
+            <div class="chat-label">AI Tutor</div>
+            <div class="chat-bubble">Namaste! 👋 Let's learn a new language together. Type a message or ask a question to get started.</div>
+          </div>
+        </div>
+        
+        <div class="chat-input-area">
+          <input type="text" id="chatInput" class="chat-input" placeholder="Type your message or ask a question..." />
+          <button id="chatSendBtn" class="btn-primary" style="padding: 10px 20px; border-radius: var(--radius-pill); background: var(--blue-600); color: white; border: none; font-weight: 600; cursor: pointer;">Send</button>
+          <button id="chatClearBtn" class="btn-secondary" style="padding: 10px 16px; border-radius: var(--radius-pill); background: var(--ink-100); color: var(--ink-900); border: 1px solid var(--ink-150); font-weight: 600; cursor: pointer;">Clear</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <p id="errorBanner" class="error-banner" role="alert" hidden></p>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <!-- ===========================================================
+       JAVASCRIPT TAB SWITCHER CONTROLLER
+  ============================================================ -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const tabs = ['translationTab', 'ttsTab', 'voiceTranslateTab', 'sttTab', 'imageTtsTab', 'pdfTranslateTab', 'chatTab'];
+      const sections = ['translationSection', 'ttsSection', 'voiceTranslateSection', 'sttSection', 'imageTtsSection', 'pdfTranslateSection', 'chatSection'];
+
+      tabs.forEach((tabId, idx) => {
+        const tabEl = document.getElementById(tabId);
+        const secEl = document.getElementById(sections[idx]);
+        if (tabEl && secEl) {
+          tabEl.addEventListener('click', () => {
+            tabs.forEach((t, i) => {
+              const te = document.getElementById(t);
+              const se = document.getElementById(sections[i]);
+              if (te) te.classList.remove('tab--active');
+              if (se) se.style.display = 'none';
+            });
+            tabEl.classList.add('tab--active');
+            secEl.style.display = 'block';
+          });
+        }
+      });
+    });
+  </script>
+
+  <!-- ===========================================================
+       APPLICATION SCRIPTS
+  ============================================================ -->
+  <script src="js/api.js"></script>
+  <script src="js/translate.js"></script>
+  <script src="js/camera-translate.js"></script>
+  <script src="js/tts.js"></script>
+  <script src="js/voice_translate.js"></script>
+  <script src="js/speech_to_text.js"></script>
+  <script src="js/image-tts.js"></script>
+  <script src="js/pdf_translate.js"></script>
+  <script src="js/chat.js"></script>
+  <script src="js/theme.js"></script>
+
+</body>
+
+</html>
